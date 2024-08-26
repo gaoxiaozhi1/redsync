@@ -14,9 +14,11 @@ type Pool interface {
 }
 
 // Conn is a single Redis connection.
+// Conn是一个单一的Redis连接。
 type Conn interface {
 	Get(name string) (string, error)
 	Set(name string, value string) (bool, error)
+	// SetNX 新增键值对，并设置过期时间
 	SetNX(name string, value string, expiry time.Duration) (bool, error)
 	Eval(script *Script, keysAndArgs ...interface{}) (interface{}, error)
 	PTTL(name string) (time.Duration, error)
@@ -24,6 +26,7 @@ type Conn interface {
 }
 
 // Script encapsulates the source, hash and key count for a Lua script.
+// 脚本封装Lua脚本的源代码、哈希和密钥计数。
 // Taken from https://github.com/gomodule/redigo/blob/46992b0f02f74066bcdfd9b03e33bc03abd10dc7/redis/script.go#L24-L30
 type Script struct {
 	KeyCount int
@@ -36,6 +39,9 @@ type Script struct {
 // argument list. If keyCount is less than zero, then the application supplies
 // the count as the first value in the keysAndArgs argument to the Do, Send and
 // SendHash methods.
+// NewScript 返回一个新的脚本对象。
+// 如果 keyCount大于或等于0，则keyCount将自动插入 EVAL命令的参数列表中。
+// 如果keyCount小于0则应用程序将 keyCount作为 Do、Send和 SendHash 方法的keysAndArgs 参数中的第一个值提供。
 // Taken from https://github.com/gomodule/redigo/blob/46992b0f02f74066bcdfd9b03e33bc03abd10dc7/redis/script.go#L32-L41
 func NewScript(keyCount int, src string) *Script {
 	h := sha1.New()
